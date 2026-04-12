@@ -33,7 +33,7 @@ export default async function MyAdsPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "PENDING": return <Badge variant="secondary">Pending Review</Badge>
-      case "ACTIVE": return <Badge className="bg-green-500">Active</Badge>
+      case "ACTIVE": return <Badge className="bg-green-500 text-white hover:bg-green-600">Active</Badge>
       case "REJECTED": return <Badge variant="destructive">Rejected</Badge>
       default: return null
     }
@@ -51,7 +51,7 @@ export default async function MyAdsPage() {
       {ads.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-gray-500 mb-4">You haven't posted any ads yet</p>
+            <p className="text-gray-500 mb-4">You haven&apos;t posted any ads yet</p>
             <Link href="/ads/new"><Button>Post Your First Ad</Button></Link>
           </CardContent>
         </Card>

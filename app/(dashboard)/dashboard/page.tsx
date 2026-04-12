@@ -43,7 +43,7 @@ export default async function DashboardPage() {
             <p className="text-gray-600 mb-4">
               View and manage your listings
             </p>
-            <Link href="/ads/my-ads">
+            <Link href="/dashboard/my-ads">
               <Button variant="outline">View My Ads</Button>
             </Link>
           </CardContent>
