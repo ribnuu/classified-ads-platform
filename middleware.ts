@@ -8,15 +8,24 @@ export default withAuth(
     const token = req.nextauth.token
     const path = req.nextUrl.pathname
 
-    // Allow public routes
-    const publicPaths = ['/', '/login', '/ads', '/categories']
+    // Public routes - accessible to everyone
+    const publicPaths = ["/", "/login", "/ads", "/categories", "/api"]
     if (publicPaths.some(p => path.startsWith(p))) {
       return NextResponse.next()
     }
 
-    // Protect admin routes
-    if (path.startsWith('/admin') && token?.role !== 'MODERATOR') {
-      return NextResponse.redirect(new URL('/dashboard', req.url))
+    // Admin routes - only for MODERATOR role
+    if (path.startsWith("/admin")) {
+      if (token?.role !== "MODERATOR") {
+        return NextResponse.redirect(new URL("/dashboard", req.url))
+      }
+    }
+
+    // Protected routes - require authentication
+    if (path.startsWith("/dashboard")) {
+      if (!token) {
+        return NextResponse.redirect(new URL("/login", req.url))
+      }
     }
 
     return NextResponse.next()
@@ -24,10 +33,20 @@ export default withAuth(
   {
     callbacks: {
       authorized: ({ req, token }) => {
-        const publicPaths = ['/', '/login', '/ads', '/categories']
-        if (publicPaths.some(p => req.nextUrl.pathname.startsWith(p))) {
+        const path = req.nextUrl.pathname
+        
+        // Public routes don't require authentication
+        const publicPaths = ["/", "/login", "/ads", "/categories", "/api"]
+        if (publicPaths.some(p => path.startsWith(p))) {
           return true
         }
+        
+        // Admin routes require MODERATOR role
+        if (path.startsWith("/admin")) {
+          return token?.role === "MODERATOR"
+        }
+        
+        // Other routes require authentication
         return !!token
       },
     },
@@ -35,5 +54,10 @@ export default withAuth(
 )
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/admin/:path*', '/ads/new'],
+  matcher: [
+    "/dashboard/:path*",
+    "/admin/:path*",
+    "/ads/new",
+    "/ads/:id/edit",
+  ],
 }

@@ -1,9 +1,9 @@
 // lib/email.ts
 
-import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses"
+import { SESv2Client, SendEmailCommand } from "@aws-sdk/client-sesv2"
 import nodemailer from "nodemailer"
 
-const sesClient = new SESClient({
+const sesClient = new SESv2Client({
   region: process.env.AWS_REGION!,
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
@@ -12,8 +12,8 @@ const sesClient = new SESClient({
 })
 
 const transporter = nodemailer.createTransport({
-  SES: { ses: sesClient, aws: { SendEmailCommand } },
-} as unknown as Parameters<typeof nodemailer.createTransport>[0])
+  SES: { sesClient, SendEmailCommand },
+})
 
 interface SendEmailParams {
   to: string
