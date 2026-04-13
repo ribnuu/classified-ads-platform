@@ -32,6 +32,14 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
     console.log('✅ Email sent:', info.messageId)
     return { success: true, messageId: info.messageId }
   } catch (error) {
+    if (error && typeof error === "object" && ("name" in error || "code" in error)) {
+      const errorName = String((error as { name?: unknown; code?: unknown }).name ?? (error as { code?: unknown }).code ?? "")
+      if (errorName === "MessageRejected") {
+        console.warn("⚠️ Email skipped: SES sandbox recipient is not verified.", { to })
+        return { success: false, skipped: true, reason: "SES sandbox recipient is not verified" }
+      }
+    }
+
     console.error('❌ Email failed:', error)
     return { success: false, error }
   }

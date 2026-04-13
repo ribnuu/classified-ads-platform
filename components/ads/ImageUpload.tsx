@@ -80,7 +80,7 @@ export default function ImageUpload({ value = [], onChange, maxFiles = 5 }: Imag
         <div className="grid grid-cols-5 gap-2">
           {value.map((imagePath, index) => (
             <div key={index} className="relative aspect-square rounded-lg overflow-hidden border">
-              <Image src={imagePath} alt={`Upload ${index + 1}`} fill className="object-cover" />
+              <Image src={imagePath} alt={`Upload ${index + 1}`} fill sizes="20vw" className="object-cover" />
               <button
                 type="button"
                 onClick={() => removeImage(index)}

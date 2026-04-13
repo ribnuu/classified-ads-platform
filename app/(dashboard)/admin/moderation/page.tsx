@@ -3,12 +3,17 @@
 import { getPendingAds } from "@/actions/moderation.actions"
 import ModerationQueue from "@/components/admin/ModerationQueue"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { getSafeUploadSrc } from "@/lib/upload-image"
 
 export default async function ModerationPage() {
   const pendingAds = await getPendingAds()
   const normalizedPendingAds = pendingAds.map((ad) => ({
     ...ad,
     price: Number(ad.price),
+    images: ad.images.map((image) => ({
+      ...image,
+      filePath: getSafeUploadSrc(image.filePath),
+    })),
   }))
 
   return (

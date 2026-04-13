@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { MapPin, Clock } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
+import { getSafeUploadSrc } from "@/lib/upload-image"
 
 interface AdCardProps {
   id: string
@@ -17,12 +18,20 @@ interface AdCardProps {
 }
 
 export default function AdCard({ id, title, price, location, category, images, createdAt }: AdCardProps) {
+  const imageSrc = getSafeUploadSrc(images[0]?.filePath)
+
   return (
     <Link href={`/ads/${id}`}>
       <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer h-full">
         <div className="relative aspect-square bg-gray-100">
           {images[0] ? (
-            <Image src={images[0].filePath} alt={title} fill className="object-cover" />
+            <Image
+              src={imageSrc}
+              alt={title}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              className="object-cover"
+            />
           ) : (
             <div className="flex items-center justify-center h-full">
               <span className="text-gray-400">No image</span>

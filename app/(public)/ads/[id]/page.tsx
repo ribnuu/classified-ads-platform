@@ -9,6 +9,7 @@ import Image from "next/image"
 import { MapPin, Calendar } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { Button } from "@/components/ui/button"
+import { getSafeUploadSrc } from "@/lib/upload-image"
 
 export default async function AdDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
@@ -29,6 +30,11 @@ export default async function AdDetailPage({ params }: { params: Promise<{ id: s
     notFound()
   }
 
+  const safeImages = ad.images.map((image) => ({
+    ...image,
+    filePath: getSafeUploadSrc(image.filePath),
+  }))
+
   return (
     <div className="container mx-auto py-8 px-4 max-w-4xl">
       <h1 className="text-3xl font-bold mb-2">{ad.title}</h1>
@@ -39,10 +45,17 @@ export default async function AdDetailPage({ params }: { params: Promise<{ id: s
         <span className="flex items-center gap-1"><Calendar className="h-4 w-4" />Posted {formatDistanceToNow(new Date(ad.createdAt))} ago</span>
       </div>
 
-      {ad.images.length > 0 && (
+      {safeImages.length > 0 && (
         <div className="grid grid-cols-2 gap-2 mb-6">
-          {ad.images.map(img => (
-            <Image key={img.id} src={img.filePath} alt={ad.title} width={400} height={300} className="rounded object-cover w-full" />
+          {safeImages.map((img) => (
+            <Image
+              key={img.id}
+              src={img.filePath}
+              alt={ad.title}
+              width={400}
+              height={300}
+              className="rounded object-cover w-full h-auto"
+            />
           ))}
         </div>
       )}

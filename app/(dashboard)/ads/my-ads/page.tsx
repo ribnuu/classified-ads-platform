@@ -12,6 +12,7 @@ import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
 import { Plus } from "lucide-react"
 import DeleteAdButton from "@/components/ads/DeleteAdButton"
+import { getSafeUploadSrc } from "@/lib/upload-image"
 
 export default async function MyAdsPage() {
   const session = await getServerSession(authOptions)
@@ -29,6 +30,15 @@ export default async function MyAdsPage() {
     },
     orderBy: { createdAt: "desc" },
   })
+
+  const normalizedAds = ads.map((ad) => ({
+    ...ad,
+    price: Number(ad.price),
+    images: ad.images.map((image) => ({
+      ...image,
+      filePath: getSafeUploadSrc(image.filePath),
+    })),
+  }))
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -48,7 +58,7 @@ export default async function MyAdsPage() {
         </Link>
       </div>
 
-      {ads.length === 0 ? (
+      {normalizedAds.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-gray-500 mb-4">You haven&apos;t posted any ads yet</p>
@@ -57,12 +67,18 @@ export default async function MyAdsPage() {
         </Card>
       ) : (
         <div className="grid gap-4">
-          {ads.map((ad) => (
+          {normalizedAds.map((ad) => (
             <Card key={ad.id} className="overflow-hidden">
               <div className="flex flex-col md:flex-row">
                 <div className="w-full md:w-48 h-48 relative bg-gray-100">
                   {ad.images[0] ? (
-                    <Image src={ad.images[0].filePath} alt={ad.title} fill className="object-cover" />
+                    <Image
+                      src={ad.images[0].filePath}
+                      alt={ad.title}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 192px"
+                      className="object-cover"
+                    />
                   ) : (
                     <div className="flex items-center justify-center h-full">
                       <span className="text-gray-400">No image</span>

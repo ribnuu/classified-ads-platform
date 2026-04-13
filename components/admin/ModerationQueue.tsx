@@ -151,7 +151,7 @@ export default function ModerationQueue({ ads }: { ads: Ad[] }) {
                 {viewingAd.images.length > 0 && (
                   <div className="grid grid-cols-2 gap-2">
                     {viewingAd.images.map((image) => (
-                      <Image key={image.id} src={image.filePath} alt={viewingAd.title} width={300} height={200} className="rounded object-cover w-full" />
+                      <Image key={image.id} src={image.filePath} alt={viewingAd.title} width={300} height={200} className="rounded object-cover w-full h-auto" />
                     ))}
                   </div>
                 )}
