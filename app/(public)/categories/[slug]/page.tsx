@@ -6,18 +6,17 @@ import { notFound, redirect } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 
-export default async function CategoryPage({ params }: { params: { slug: string } }) {
+export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+
   const category = await prisma.category.findFirst({
-    where: { slug: params.slug, parentId: null },
+    where: { slug },
     include: {
       children: {
         include: {
           _count: { select: { ads: { where: { status: "ACTIVE" } } } },
         },
         orderBy: { name: "asc" },
-      },
-      _count: {
-        select: { ads: { where: { status: "ACTIVE" } } },
       },
     },
   })
@@ -26,7 +25,7 @@ export default async function CategoryPage({ params }: { params: { slug: string 
     notFound()
   }
 
-  if (category.children.length === 0) {
+  if (category.parentId) {
     redirect(`/ads/search?category=${category.id}`)
   }
 

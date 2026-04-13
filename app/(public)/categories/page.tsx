@@ -1,20 +1,11 @@
 // app/(public)/categories/page.tsx
 
 import Link from "next/link"
-import { prisma } from "@/lib/prisma"
 import { Card, CardContent } from "@/components/ui/card"
+import { getCategoriesWithHierarchy } from "@/actions/search.actions"
 
 export default async function CategoriesPage() {
-  const categories = await prisma.category.findMany({
-    where: { parentId: null },
-    include: {
-      _count: { select: { ads: { where: { status: "ACTIVE" } } } },
-      children: {
-        include: { _count: { select: { ads: { where: { status: "ACTIVE" } } } } }
-      }
-    },
-    orderBy: { name: "asc" }
-  })
+  const categories = await getCategoriesWithHierarchy()
 
   return (
     <main className="container mx-auto py-8 px-4">
