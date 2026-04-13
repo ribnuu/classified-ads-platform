@@ -1,18 +1,24 @@
 // app/(public)/ads/[id]/page.tsx
 
+import { getServerSession } from "next-auth"
+import Link from "next/link"
 import { notFound } from "next/navigation"
 import { prisma } from "@/lib/prisma"
+import { authOptions } from "@/lib/auth"
 import Image from "next/image"
 import { MapPin, Calendar } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
+import { Button } from "@/components/ui/button"
 
 export default async function AdDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const session = await getServerSession(authOptions)
+  const isAuthenticated = !!session?.user
   const { id } = await params
 
   const ad = await prisma.advertisement.findUnique({
     where: { id },
     include: {
-      user: { select: { name: true, createdAt: true } },
+      user: { select: { name: true, email: true, createdAt: true } },
       category: { select: { name: true } },
       location: { select: { name: true } },
       images: true,
@@ -46,10 +52,23 @@ export default async function AdDetailPage({ params }: { params: Promise<{ id: s
         <p className="whitespace-pre-wrap">{ad.description}</p>
       </div>
 
-      <div className="border-t pt-4">
-        <p className="font-semibold">Seller: {ad.user.name || "Anonymous"}</p>
-        <p className="text-sm text-gray-600">Member since {formatDistanceToNow(new Date(ad.user.createdAt))} ago</p>
-      </div>
+      {isAuthenticated ? (
+        <div className="border-t pt-4">
+          <p className="font-semibold">Seller: {ad.user.name || "Anonymous"}</p>
+          {ad.user.email && <p className="text-sm text-gray-600">Email: {ad.user.email}</p>}
+          <p className="text-sm text-gray-600">Member since {formatDistanceToNow(new Date(ad.user.createdAt))} ago</p>
+        </div>
+      ) : (
+        <div className="border-t pt-6 mt-6">
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
+            <h3 className="text-lg font-semibold mb-2">Want to contact the seller?</h3>
+            <p className="text-gray-600 mb-4">Sign in to view seller information and contact details.</p>
+            <Link href={`/login?callbackUrl=/ads/${id}`}>
+              <Button size="lg">Sign In to Continue</Button>
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
