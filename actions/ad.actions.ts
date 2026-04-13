@@ -83,3 +83,73 @@ export async function deleteAdvertisement(id: string) {
     return { error: "Failed to delete advertisement" }
   }
 }
+
+export async function updateAdvertisement(id: string, formData: FormData) {
+  const session = await getServerSession(authOptions)
+
+  if (!session?.user) {
+    return { error: "Unauthorized" }
+  }
+
+  const existingAd = await prisma.advertisement.findUnique({
+    where: { id },
+    select: { userId: true },
+  })
+
+  if (!existingAd || existingAd.userId !== session.user.id) {
+    return { error: "You don't have permission to edit this ad" }
+  }
+
+  const rawImages = formData.get("images")
+  const images = rawImages ? JSON.parse(rawImages as string) : []
+
+  const rawData = {
+    title: formData.get("title"),
+    description: formData.get("description"),
+    price: formData.get("price"),
+    categoryId: formData.get("categoryId"),
+    locationId: formData.get("locationId"),
+    images,
+  }
+
+  const validatedFields = adSchema.safeParse(rawData)
+
+  if (!validatedFields.success) {
+    const errors = validatedFields.error.flatten().fieldErrors
+    return { error: "Validation failed", fieldErrors: errors }
+  }
+
+  const { title, description, price, categoryId, locationId, images: imagePaths } = validatedFields.data
+  const priceValue = parseFloat(price)
+
+  try {
+    await prisma.advertisement.update({
+      where: { id },
+      data: {
+        title,
+        description,
+        price: priceValue,
+        categoryId,
+        locationId,
+        status: "PENDING",
+        rejectionReason: null,
+        images: {
+          deleteMany: {},
+          create: imagePaths.map((filePath: string, index: number) => ({
+            filePath,
+            isPrimary: index === 0,
+          })),
+        },
+      },
+    })
+
+    revalidatePath("/dashboard/my-ads")
+    revalidatePath("/admin/moderation")
+    revalidatePath("/ads/search")
+
+    return { success: true, message: "Advertisement updated and submitted for review" }
+  } catch (error) {
+    console.error("Failed to update advertisement:", error)
+    return { error: "Failed to update advertisement" }
+  }
+}

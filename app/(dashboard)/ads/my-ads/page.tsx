@@ -5,7 +5,7 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { authOptions } from "@/lib/auth"
 import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
 import Link from "next/link"
@@ -91,7 +91,15 @@ export default async function MyAdsPage() {
                     </div>
                   )}
 
-                  <DeleteAdButton adId={ad.id} adTitle={ad.title} />
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/ads/${ad.id}/edit`}
+                      className={buttonVariants({ variant: "outline", size: "sm" })}
+                    >
+                      Edit
+                    </Link>
+                    <DeleteAdButton adId={ad.id} adTitle={ad.title} />
+                  </div>
                 </div>
               </div>
             </Card>

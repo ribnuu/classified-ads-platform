@@ -6,9 +6,11 @@ import Image from "next/image"
 import { MapPin, Calendar } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 
-export default async function AdDetailPage({ params }: { params: { id: string } }) {
+export default async function AdDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+
   const ad = await prisma.advertisement.findUnique({
-    where: { id: params.id, status: "ACTIVE" },
+    where: { id },
     include: {
       user: { select: { name: true, createdAt: true } },
       category: { select: { name: true } },
@@ -17,7 +19,9 @@ export default async function AdDetailPage({ params }: { params: { id: string } 
     },
   })
 
-  if (!ad) notFound()
+  if (!ad || ad.status !== "ACTIVE") {
+    notFound()
+  }
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-4xl">

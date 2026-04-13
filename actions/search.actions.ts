@@ -28,11 +28,7 @@ export async function searchAds(params: SearchParams) {
   }
 
   if (categoryId) {
-    const subcategories = await prisma.category.findMany({
-      where: { OR: [{ id: categoryId }, { parentId: categoryId }] },
-      select: { id: true },
-    })
-    where.categoryId = { in: subcategories.map(c => c.id) }
+    where.categoryId = categoryId
   }
 
   if (locationId) where.locationId = locationId
@@ -85,7 +81,14 @@ export async function getCategoriesWithHierarchy() {
   try {
     return await prisma.category.findMany({
       where: { parentId: null },
-      include: { children: { orderBy: { name: "asc" } } },
+      include: {
+        _count: { select: { ads: { where: { status: "ACTIVE" } } } },
+        children: {
+          orderBy: { name: "asc" },
+          include: { _count: { select: { ads: { where: { status: "ACTIVE" } } } },
+          },
+        },
+      },
       orderBy: { name: "asc" },
     })
   } catch { return [] }
@@ -114,11 +117,33 @@ export async function getRecentAds(limit: number = 8) {
 
 export async function getFeaturedCategories() {
   try {
-    return await prisma.category.findMany({
+    const categories = await prisma.category.findMany({
       where: { parentId: null },
-      select: { id: true, name: true, slug: true, _count: { select: { ads: { where: { status: "ACTIVE" } } } } },
-      orderBy: { ads: { _count: "desc" } },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        _count: { select: { ads: { where: { status: "ACTIVE" } } } },
+        children: {
+          select: {
+            _count: { select: { ads: { where: { status: "ACTIVE" } } } },
+          },
+        },
+      },
       take: 6,
     })
+
+    return categories
+      .map((category) => ({
+        id: category.id,
+        name: category.name,
+        slug: category.slug,
+        _count: {
+          ads:
+            category._count.ads +
+            category.children.reduce((total, child) => total + child._count.ads, 0),
+        },
+      }))
+      .sort((left, right) => right._count.ads - left._count.ads)
   } catch { return [] }
 }

@@ -1,4 +1,4 @@
-// app/(auth)/login/page.tsx
+// app/(auth)/register/page.tsx
 
 'use client'
 
@@ -8,14 +8,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { FcGoogle } from "react-icons/fc"
 import Link from "next/link"
 
-export default function LoginPage() {
+export default function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Welcome Back</CardTitle>
+          <CardTitle className="text-2xl">Join Our Community</CardTitle>
           <CardDescription>
-            Sign in to post ads and manage your listings
+            Create an account to buy and sell items
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -25,14 +25,14 @@ export default function LoginPage() {
             variant="outline"
           >
             <FcGoogle className="mr-2 h-5 w-5" />
-            Continue with Google
+            Sign Up with Google
           </Button>
-
+          
           <div className="text-center text-sm">
             <p className="text-gray-600">
-              Don&apos;t have an account?{' '}
-              <Link href="/register" className="text-primary hover:underline font-medium">
-                Sign Up
+              Already have an account?{' '}
+              <Link href="/login" className="text-primary hover:underline font-medium">
+                Sign In
               </Link>
             </p>
           </div>

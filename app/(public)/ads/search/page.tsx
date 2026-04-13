@@ -3,10 +3,13 @@
 import { searchAds } from "@/actions/search.actions"
 import AdGrid from "@/components/ads/AdGrid"
 
-export default async function SearchPage({ searchParams }: { searchParams: { q?: string; page?: string } }) {
+export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string; page?: string; category?: string }> }) {
+  const resolvedSearchParams = await searchParams
+
   const params = {
-    query: searchParams.q,
-    page: searchParams.page ? Number(searchParams.page) : 1,
+    query: resolvedSearchParams.q,
+    categoryId: resolvedSearchParams.category,
+    page: resolvedSearchParams.page ? Number(resolvedSearchParams.page) : 1,
     limit: 20,
   }
 

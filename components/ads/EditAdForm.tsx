@@ -1,8 +1,8 @@
-// components/ads/AdForm.tsx
+// components/ads/EditAdForm.tsx
 
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Controller, useForm, type Path } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select"
 import { adSchema, type AdFormData } from "@/lib/validations/ad.schema"
-import { createAdvertisement } from "@/actions/ad.actions"
+import { updateAdvertisement } from "@/actions/ad.actions"
 import ImageUpload from "./ImageUpload"
 import toast from "react-hot-toast"
 
@@ -26,12 +26,21 @@ interface Location {
   name: string
 }
 
-interface AdFormProps {
+interface EditAdFormProps {
+  ad: {
+    id: string
+    title: string
+    description: string
+    price: unknown
+    categoryId: string
+    locationId: string
+    images: { id: string; filePath: string }[]
+  }
   categories: Category[]
   locations: Location[]
 }
 
-export default function AdForm({ categories, locations }: AdFormProps) {
+export default function EditAdForm({ ad, categories, locations }: EditAdFormProps) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [uploadedImages, setUploadedImages] = useState<string[]>([])
@@ -40,22 +49,37 @@ export default function AdForm({ categories, locations }: AdFormProps) {
   const form = useForm<AdFormData>({
     resolver: zodResolver(adSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      price: "",
-      categoryId: "",
-      locationId: "",
-      images: [],
+      title: ad.title,
+      description: ad.description,
+      price: String(ad.price),
+      categoryId: ad.categoryId,
+      locationId: ad.locationId,
+      images: ad.images.map((image) => image.filePath),
     },
   })
+
+  useEffect(() => {
+    const existingImages = ad.images.map((image) => image.filePath)
+    setUploadedImages(existingImages)
+    form.setValue("images", existingImages)
+  }, [ad.images, form])
 
   useEffect(() => {
     form.setValue("images", uploadedImages)
   }, [uploadedImages, form])
 
+  useEffect(() => {
+    const currentCategory = categories.find((category) => category.id === ad.categoryId)
+    if (currentCategory?.parentId) {
+      setSelectedParentCategory(currentCategory.parentId)
+    } else if (currentCategory) {
+      setSelectedParentCategory(currentCategory.id)
+    }
+  }, [ad.categoryId, categories])
+
   async function onSubmit(data: AdFormData) {
     setIsSubmitting(true)
-    
+
     try {
       const formData = new FormData()
       formData.append("title", data.title)
@@ -65,7 +89,7 @@ export default function AdForm({ categories, locations }: AdFormProps) {
       formData.append("locationId", data.locationId)
       formData.append("images", JSON.stringify(data.images))
 
-      const result = await createAdvertisement(formData)
+      const result = await updateAdvertisement(ad.id, formData)
 
       if (result.error) {
         toast.error(result.error)
@@ -77,7 +101,7 @@ export default function AdForm({ categories, locations }: AdFormProps) {
           })
         }
       } else {
-        toast.success("Advertisement submitted for review!")
+        toast.success("Advertisement updated and submitted for review!")
         router.push("/dashboard/my-ads")
       }
     } catch {
@@ -87,9 +111,9 @@ export default function AdForm({ categories, locations }: AdFormProps) {
     }
   }
 
-  const parentCategories = categories.filter(c => !c.parentId)
-  const getSubcategories = (parentId: string) => categories.filter(c => c.parentId === parentId)
-  const selectedParentCategoryName = parentCategories.find((c) => c.id === selectedParentCategory)?.name
+  const parentCategories = categories.filter((category) => !category.parentId)
+  const getSubcategories = (parentId: string) => categories.filter((category) => category.parentId === parentId)
+  const selectedParentCategoryName = parentCategories.find((category) => category.id === selectedParentCategory)?.name
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -143,7 +167,7 @@ export default function AdForm({ categories, locations }: AdFormProps) {
               <Select onValueChange={field.onChange} value={field.value} disabled={!selectedParentCategory}>
                 <SelectTrigger>
                   <span className={field.value ? "text-foreground" : "text-muted-foreground"}>
-                    {categories.find((c) => c.id === field.value)?.name ?? "Select subcategory"}
+                    {categories.find((category) => category.id === field.value)?.name ?? "Select subcategory"}
                   </span>
                 </SelectTrigger>
                 <SelectContent>
@@ -221,7 +245,7 @@ export default function AdForm({ categories, locations }: AdFormProps) {
       <div className="space-y-2">
         <label className="text-sm font-medium">Images</label>
         <ImageUpload value={uploadedImages} onChange={setUploadedImages} maxFiles={5} />
-        <p className="text-sm text-muted-foreground">Upload up to 5 images. First image will be the cover.</p>
+        <p className="text-sm text-muted-foreground">Add or remove images. First image will be the cover.</p>
         {form.formState.errors.images?.message && (
           <p className="text-sm font-medium text-destructive">{form.formState.errors.images.message}</p>
         )}
@@ -229,7 +253,7 @@ export default function AdForm({ categories, locations }: AdFormProps) {
 
       <div className="flex gap-4">
         <Button type="submit" disabled={isSubmitting} className="flex-1">
-          {isSubmitting ? "Submitting..." : "Post Advertisement"}
+          {isSubmitting ? "Updating..." : "Update Advertisement"}
         </Button>
         <Button type="button" variant="outline" onClick={() => router.back()}>
           Cancel

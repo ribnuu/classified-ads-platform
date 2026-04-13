@@ -43,7 +43,7 @@ export default function DeleteAdButton({ adId, adTitle }: DeleteAdButtonProps) {
         <DialogHeader>
           <DialogTitle>Delete Advertisement</DialogTitle>
           <DialogDescription>
-            {"Are you sure you want to delete “"}{adTitle}{"”? This cannot be undone."}
+            Are you sure you want to delete &quot;{adTitle}&quot;? This cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

@@ -47,10 +47,10 @@ export default async function HomePage() {
                 <Input
                   name="query"
                   placeholder="Search for anything..."
-                  className="pl-10 py-6 text-lg bg-white"
+                  className="pl-10 h-14 text-lg bg-white"
                 />
               </div>
-              <Button type="submit" size="lg">
+              <Button type="submit" size="lg" className="h-14 px-8">
                 Search
               </Button>
             </div>
@@ -118,14 +118,14 @@ export default async function HomePage() {
       </div>
 
       {/* CTA Section */}
-      <div className="py-16 bg-blue-600">
+      <div className="py-16 bg-gradient-to-r from-blue-50 to-indigo-50">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4 text-white">Ready to Sell?</h2>
-          <p className="text-xl mb-8 text-blue-100">
+          <h2 className="text-3xl font-bold mb-4 text-gray-900">Ready to Sell?</h2>
+          <p className="text-xl mb-8 text-gray-700">
             Post your ad today and reach thousands of buyers
           </p>
           <Link href="/ads/new">
-            <Button size="lg" variant="secondary" className="bg-white text-blue-600 hover:bg-gray-100">
+            <Button size="lg" variant="default">
               Post a Free Ad
             </Button>
           </Link>
